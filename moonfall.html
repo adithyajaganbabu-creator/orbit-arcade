@@ -39,7 +39,7 @@
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const formatTime=s=>{const n=Math.max(0,Math.floor(s));return `${Math.floor(n/60)}:${String(n%60).padStart(2,'0')}`};
   function updateHud(){countLabel.textContent=`${score}/3`;lifeLabel.textContent=String(lives);chargeLabel.textContent=String(charges);timerLabel.textContent=formatTime(elapsed)}
-  function reset(){
+  function saveRecord(game,value,lower=false){try{const name=(localStorage.getItem("orbitArcadePlayer")||"Player").trim().slice(0,18)||"Player",board=JSON.parse(localStorage.getItem("orbitArcadeScores")||"{}"),row=board[name]||{},old=Number(row[game])||0;row[game]=lower?(old?Math.min(old,value):value):Math.max(old,value);board[name]=row;localStorage.setItem("orbitArcadeScores",JSON.stringify(board))}catch{}}function reset(){
     player={x:48,y:304,vx:0,vy:0,w:23,h:36,onGround:false,face:1};
     crystals=[{x:466,y:270},{x:716,y:235},{x:1261,y:240}].map((c,i)=>({...c,got:false,phase:i*2.1}));
     sentries=[{x:267,y:308,r:15,v:2.0,min:220,max:292,phase:0},{x:966,y:289,r:17,v:-2.35,min:922,max:1048,phase:1.6},{x:1558,y:284,r:16,v:2.8,min:1510,max:1615,phase:3.2}];
@@ -83,7 +83,7 @@
       if(!hit)for(const s of sentries){if(circleRect(s.x,s.y+Math.sin(now*4+s.phase)*4,s.r+3,hurtbox)){hit=true;break}}
     }
     if(hit){loseLife(now);if(!active)return}
-    camera=clamp(player.x-205,0,WORLD-W);if(player.x>1732&&score===3){active=false;won=true;const previous=bestTime;bestTime=previous?Math.min(previous,elapsed):elapsed;try{localStorage.setItem('moonfall-best',String(bestTime))}catch{}headline.textContent='Signal restored!';message.textContent=`Beacon online in ${formatTime(elapsed)}. ${previous&&elapsed<=previous?'New best time!':`Best time: ${formatTime(bestTime)}.`} Moonbase hero status earned.`;startButton.textContent='RUN IT AGAIN';overlay.style.display='grid'}updateHud();draw(elapsed);if(active)requestAnimationFrame(loop)
+    camera=clamp(player.x-205,0,WORLD-W);if(player.x>1732&&score===3){active=false;won=true;const previous=bestTime;bestTime=previous?Math.min(previous,elapsed):elapsed;try{localStorage.setItem('moonfall-best',String(bestTime))}catch{}saveRecord("moonfall",elapsed,true);headline.textContent='Signal restored!';message.textContent=`Beacon online in ${formatTime(elapsed)}. ${previous&&elapsed<=previous?'New best time!':`Best time: ${formatTime(bestTime)}.`} Moonbase hero status earned.`;startButton.textContent='RUN IT AGAIN';overlay.style.display='grid'}updateHud();draw(elapsed);if(active)requestAnimationFrame(loop)
   }
   document.addEventListener('keydown',e=>{const k=e.code;if(['ArrowLeft','ArrowRight','ArrowUp','Space'].includes(k))e.preventDefault();if(['ArrowLeft','ArrowRight','ArrowUp','Space','KeyA','KeyD','KeyW','KeyX','ShiftLeft','ShiftRight'].includes(k))keyDown.add(k)});
   document.addEventListener('keyup',e=>keyDown.delete(e.code));
